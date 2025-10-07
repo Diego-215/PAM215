@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Navegacion",
-    "slug": "Navegacion",
+    "name": "Navegador",
+    "slug": "Navegador",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "navegacion",
+    "scheme": "navegador",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
