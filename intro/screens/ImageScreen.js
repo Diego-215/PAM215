@@ -1,13 +1,89 @@
-import { Text, StyleSheet, View } from 'react-native'
-import React, { useState } from 'react'
+import { Text, StyleSheet, View, ImageBackground,
+  Animated,Easing} from 'react-native'
+import React,{useEffect,useState} from 'react';
 
-export default function ImageScreen () {
+
+export default function Black_SplashScreen() {
+  const[cargando,setcargador]=useState(true);
+  const desvanecido = new Animated.Value(1);
+
+  useEffect(()=>{
+      const timer=setTimeout(()=>{
+        Animated.timing(desvanecido,{
+          toValue:0,
+          duration: 800,
+          easing: Easing.out(Easing.ease),
+        }).start(()=> setcargador(false));
+
+      },2000);
+      return () => clearTimeout(timer)
+    },[]);
+
+  if(cargando){
+    return(
+      <Animated.View style={[styles.splashCont, {opacity:desvanecido}]}>
+        <ImageBackground style={styles.splashImage}
+        source={require('../assets/imagen2.jpg')}
+        resizeMode='contain'
+        >
+          <Text style={styles.splashtext}>Cargando...</Text>
+        </ImageBackground>
+      </Animated.View>
+    );
+  }
 
     return (
-      <View>
-        <Text>Proximamente por Charly...</Text>
-      </View>
-    )
-}
+      <ImageBackground style={styles.Background}
+      source={require('../assets/imagen1.jpg')}
+      resizeMode='cover'
+      >
+        <View style={styles.textconterin}>
+        <Text style={styles.texto}>Holaaaaaa</Text>
+        </View>
 
-const styles = StyleSheet.create({})
+      </ImageBackground>
+
+        
+     /* <View>
+        <Text>Proximamente charly</Text>
+      </View>*/
+    )
+  }
+
+
+const styles = StyleSheet.create({
+  Background:{
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center',
+    width:'100%',
+    height: '100%',
+  },
+  texto:{
+    color: '#00d4d0ff',
+    fontWeight:'bold',
+    fontSize:35,
+  },
+  splashCont:{
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center',
+    padding: 50,
+  },
+  splashImage:{
+    flex:1,
+    width:'100%',
+    justifyContent:'center',
+    alignItems:'center',
+  },
+  splashtext:{
+    position:'absolute',
+    marginBottom:50,
+    fontSize:30,
+    color:'#97e9ffff'
+  },
+  textconterin:{
+    backgroundColor:'black',
+    padding:5,
+  },
+});

@@ -79,10 +79,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   input:{
-    width: '50%', //ocupa el ancho disponible
-    borderWidth: 2, // grosor del borde
-    borderColor: 'black', //color del borde
-    borderRadius: 10, // 
+    width: '50%', 
+    borderWidth: 2,
+    borderColor: 'black', 
+    borderRadius: 10, 
     padding: 10,
     backgroundColor: 'white'
   }
