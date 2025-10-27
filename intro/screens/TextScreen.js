@@ -17,7 +17,7 @@ export default function TextScreen () {
 
         alert('Datos ingresados \n' + `Nombre: ${nombre}\nPassword: ${password}\nTelefono: ${telefono}`)  
       }
-    }
+    } 
 
 
     return (

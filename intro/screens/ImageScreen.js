@@ -1,9 +1,9 @@
-import { Text, StyleSheet, View, ImageBackground,
-  Animated,Easing} from 'react-native'
+import { Text, StyleSheet, View, ImageBackground, Animated,Easing} from 'react-native'
 import React,{useEffect,useState} from 'react';
 
 
 export default function Black_SplashScreen() {
+  
   const[cargando,setcargador]=useState(true);
   const desvanecido = new Animated.Value(1);
 
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     flex:1,
     justifyContent:'center',
     alignItems:'center',
-    padding: 50,
+    padding: 50
   },
   splashImage:{
     flex:1,

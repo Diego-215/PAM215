@@ -9,6 +9,7 @@ import IndicatorScreen from './IndicatorScreen';
 import FlatScreen from './FlatScreen';
 import ModalScreen from './ModalScreen';
 import SheetScreen from './SheetScreen';
+import PRegistroScreen from './PRegistroScreen';
 
 export default function MenuScreen (){
     const[screen, setScreen] = useState('menu');
@@ -31,7 +32,9 @@ export default function MenuScreen (){
         case 'modal':
             return <ModalScreen/>; 
         case 'sheet':
-            return <SheetScreen/>;       
+            return <SheetScreen/>;  
+        case 'registro': 
+            return <PRegistroScreen/>
         case 'menu':
             default:
                 return (
@@ -47,6 +50,7 @@ export default function MenuScreen (){
                                 <Button color= 'green' onPress={()=>setScreen ('flat')} title='Pract: FlatList'></Button>
                                 <Button color= 'green' onPress={()=>setScreen ('modal')} title='Pract: Modal'></Button>
                                 <Button color= 'green' onPress={()=>setScreen ('sheet')} title='Pract: Button Sheet'></Button>
+                                <Button color= 'green' onPress={()=>setScreen ('registro')} title='Pract PRegistro'></Button>
                         </View>
                     </View>
         )        
