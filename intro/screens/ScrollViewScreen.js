@@ -2,11 +2,12 @@ import { Text, StyleSheet, View, ScrollView, Button } from 'react-native';
 import React, { useRef, useState } from 'react';
 
 export default function ScrollViewScreen() {
-  const scrollRef = useRef(); // referencia al ScrollView
-  const [scrollY, setScrollY] = useState(0); // guarda la posición del scroll vertical
-  //esto es lo del boton, lo mencionamos primero
+
+  const scrollRef = useRef(); 
+  const [scrollY, setScrollY] = useState(0); 
+
   const irAlFinal = () => {
-    scrollRef.current.scrollToEnd({ animated: true }); // función para ir al final
+    scrollRef.current.scrollToEnd({ animated: true }); 
   };
 
   const handleScroll = (event) => {
@@ -16,6 +17,7 @@ export default function ScrollViewScreen() {
   };
 
   return (
+
     <ScrollView
       ref={scrollRef}
       style={styles.container}
@@ -61,6 +63,7 @@ export default function ScrollViewScreen() {
         style={styles.scrollhorizontal}
         showsHorizontalScrollIndicator={true}
       >
+        
         <View style={styles.elementos2}>
           <Text style={styles.text}>Cuadro 1</Text>
         </View>
