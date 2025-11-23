@@ -1,7 +1,7 @@
 import { Text, StyleSheet, View } from 'react-native'
-import Ionicons from 'react-native-vector-icons/Ionicons'
+import { Ionicons } from '@expo/vector-icons';
 
-export default function Home () {
+export default function Home ({navigation}) {
   return (
     
 
