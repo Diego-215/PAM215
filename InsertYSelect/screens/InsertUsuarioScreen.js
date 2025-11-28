@@ -1,32 +1,35 @@
 import { useEffect, useState, useCallback } from "react";
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, 
-    Alert, ActivityIndicator, Platform } from "react-native";
+import {View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, Alert, ActivityIndicator} from "react-native";
 import { UsuarioController } from "../controllers/UsuarioController";
 
 const controller = new UsuarioController();
 
-export default function UsuarioView(){
-    const[usuarios, setUsuarios] = useState([]);
-    const[nombre, setNombre] = useState('');
-    const[loading, setLoading] = useState(true);
-    const[guardando, setGuardando] = useState(false);
+export default function UsuarioView() {
+    const [usuarios, setUsuarios] = useState([]);
+    const [nombre, setNombre] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [guardando, setGuardando] = useState(false);
+
+   
+    const [modalVisible, setModalVisible] = useState(false);
+    const [usuarioEditando, setUsuarioEditando] = useState(null);
+    const [nuevoNombre, setNuevoNombre] = useState('');
 
     //SLECT - Cargar usuarios  desde la BD
     const cargarUsuarios = useCallback(async () => {
-        try{
+        try {
             setLoading(true);
             const data = await controller.obtenerUsuarios();
             setUsuarios(data);
-            console.log(`${data.length} usuarios cargados`);
-        }catch(error){
+        } catch (error) {
             Alert.alert('Error', error.message);
-        }finally{
+        } finally {
             setLoading(false);
         }
     }, []);
 
     // Inicializar y cargar datos
-    useEffect(()=>{
+    useEffect(() => {
         const init = async () => {
             await controller.initialize();
             await cargarUsuarios();
@@ -36,304 +39,291 @@ export default function UsuarioView(){
         // avisar los cambios automaticos
         controller.addListener(cargarUsuarios);
 
-        return ()=>{
+        return () => {
             controller.removeListener(cargarUsuarios);
         };
     }, [cargarUsuarios]);
 
     // INSERT - Agregar nuevo usuario
     const handleAgregar = async () => {
-        if(guardando) return;
-        try{
+        if (guardando) return;
+        try {
             setGuardando(true);
-            const usuarioCreado = await controller.crearUsuario(nombre);
-            Alert.alert('Usuario Creado', `"${usuarioCreado.nombre}" guardado con ID: ${usuarioCreado.id}`);
+            await controller.crearUsuario(nombre);
             setNombre('');
-        }
-        catch(error){
+        } catch (error) {
             Alert.alert('Error', error.message);
-        }
-        finally{
+        } finally {
             setGuardando(false);
         }
     };
 
     //Renderizar cada usuario
-    const renderUsuario = ({item, index}) => (
+    const preguntarNuevoNombre = (usuario) => {
+        setUsuarioEditando(usuario);
+        setNuevoNombre(usuario.nombre);
+        setModalVisible(true);
+    };
+
+    const confirmarEliminar = (id) => {
+        Alert.alert(
+            "Eliminar Usuario",
+            "¿Seguro que deseas eliminar este usuario?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await controller.eliminarUsuario(id);
+                            Alert.alert("Eliminado", "Usuario eliminado");
+                        } catch (e) {
+                            Alert.alert("Error", e.message);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
+    const renderUsuario = ({ item, index }) => (
         <View style={styles.userItem}>
             <View style={styles.userNumber}>
                 <Text style={styles.userNumberText}>{index + 1}</Text>
             </View>
+
             <View style={styles.userInfo}>
                 <Text style={styles.userName}>{item.nombre}</Text>
                 <Text style={styles.userId}>ID: {item.id}</Text>
-                <Text style={styles.userDate}>
-                    {new Date(item.fechaCreacion).toLocaleDateString('es-MX', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                    })}
-                </Text>
+                <Text style={styles.userDate}>{item.fechaCreacion}</Text>
+
+                <View style={{ flexDirection: "row", marginTop: 10 }}>
+                    <TouchableOpacity
+                        style={[styles.actionButton, { backgroundColor: "#FFA500" }]}
+                        onPress={() => preguntarNuevoNombre(item)}
+                    >
+                        <Text style={styles.actionText}>Editar</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[styles.actionButton, { backgroundColor: "#FF3B30" }]}
+                        onPress={() => confirmarEliminar(item.id)}
+                    >
+                        <Text style={styles.actionText}>Eliminar</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
 
-    return(
+    return (
         <View style={styles.container}>
-        
-            {/* Zona del encabezado */}
-    
-            <Text style={styles.title}> INSERT & SELECT</Text>
-            <Text style={styles.subtitle}>
-                {Platform.OS === 'web' ? ' WEB (LocalStorage)' : ` ${Platform.OS.toUpperCase()} (SQLite)`}
-            </Text>
-    
-            {/* Zona del INSERT */}
-    
+
+            <Text style={styles.title}>INSERT & SELECT</Text>
+
             <View style={styles.insertSection}>
-                <Text style={styles.sectionTitle}> Insertar Usuario</Text>
-                
+                <Text style={styles.sectionTitle}>Insertar Usuario</Text>
+
                 <TextInput
                     style={styles.input}
-                    placeholder="Escribe el nombre del usuario"
+                    placeholder="Nombre del usuario"
                     value={nombre}
                     onChangeText={setNombre}
-                    editable={!guardando}
                 />
-        
-                <TouchableOpacity 
-                    style={[styles.button, guardando && styles.buttonDisabled]} 
+
+                <TouchableOpacity
+                    style={[styles.button, guardando && styles.buttonDisabled]}
                     onPress={handleAgregar}
-                    disabled={guardando} 
+                    disabled={guardando}
                 >
                     <Text style={styles.buttonText}>
-                    {guardando ? ' Guardando...' : 'Agregar Usuario'}
+                        {guardando ? "Guardando..." : "Agregar Usuario"}
                     </Text>
-        
                 </TouchableOpacity>
-    
             </View>
-    
-    
-    
             {/* Zona del SELECT */}
-    
+
+         
             <View style={styles.selectSection}>
-    
                 <View style={styles.selectHeader}>
-        
                     <Text style={styles.sectionTitle}>Lista de Usuarios</Text>
-        
-                    <TouchableOpacity 
+
+                    <TouchableOpacity
                         style={styles.refreshButton}
-                        onPress={cargarUsuarios} 
+                        onPress={cargarUsuarios}
                     >
-                    <Text style={styles.refreshText}>Recargar</Text>
+                        <Text style={styles.refreshText}>Recargar</Text>
                     </TouchableOpacity>
-        
                 </View>
-        
+
                 {loading ? (
-                    <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="large" color="#007AFF" />
-                        <Text style={styles.loadingText}>Cargando usuarios...</Text>
-                    </View>
-                    ) : (
+                    <ActivityIndicator size="large" color="#007AFF" />
+                ) : (
                     <FlatList
                         data={usuarios}
                         keyExtractor={(item) => item.id.toString()}
                         renderItem={renderUsuario}
-                        ListEmptyComponent={
-                            <View style={styles.emptyContainer}>
-                                <Text style={styles.emptyText}> No hay usuarios</Text>
-                                <Text style={styles.emptySubtext}>Agrega el primero arriba</Text>
-                            </View>
-                        }
-                        contentContainerStyle={usuarios.length === 0 && styles.emptyList}
                     />
                 )}
             </View>
+
+            {modalVisible && (
+                <View style={styles.modal}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.sectionTitle}>Editar Usuario</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={nuevoNombre}
+                            onChangeText={setNuevoNombre}
+                            placeholder="Nuevo nombre"
+                        />
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <TouchableOpacity
+                                style={[styles.button, { backgroundColor: '#ccc' }]}
+                                onPress={() => setModalVisible(false)}
+                            >
+                                <Text style={styles.buttonText}>Cancelar</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={styles.button}
+                                onPress={async () => {
+                                    try {
+                                        await controller.actualizarUsuario(usuarioEditando.id, nuevoNombre);
+                                        Alert.alert("Éxito", "Usuario actualizado");
+                                        setModalVisible(false);
+                                    } catch (e) {
+                                        Alert.alert("Error", e.message);
+                                    }
+                                }}
+                            >
+                                <Text style={styles.buttonText}>Guardar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            )}
+
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f5f5f5',
-        paddingTop: 50,
+    container: { 
+        flex: 1, 
+        backgroundColor: "#f5f5f5", 
+        paddingTop: 50 
     },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        color: '#333',
-        marginBottom: 5,
-    },
-    subtitle: {
-        fontSize: 14,
-        color: '#666',
-        textAlign: 'center',
-        marginBottom: 20,
+    title: { 
+        fontSize: 26, 
+        fontWeight: "bold", 
+        textAlign: "center", 
+        marginBottom: 20 
     },
     insertSection: {
-        backgroundColor: '#fff',
-        padding: 20,
-        marginHorizontal: 15,
-        marginBottom: 15,
+        backgroundColor: "#fff", 
+        padding: 20, 
+        margin: 15, 
         borderRadius: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
     },
     selectSection: {
-        flex: 1,
-        backgroundColor: '#fff',
-        marginHorizontal: 15,
-        marginBottom: 15,
-        borderRadius: 12,
+        flex: 1, 
+        backgroundColor: "#fff", 
+        margin: 15, 
+        borderRadius: 12, 
         padding: 15,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
     },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: 15,
+    sectionTitle: { 
+        fontSize: 18, 
+        fontWeight: "bold", 
+        marginBottom: 15 
     },
     input: {
-        borderWidth: 1,
-        borderColor: '#e0e0e0',
+        borderWidth: 1, 
+        borderColor: "#ccc", 
         borderRadius: 8,
-        padding: 15,
-        marginBottom: 12,
-        fontSize: 16,
-        backgroundColor: '#fafafa',
+        padding: 10, 
+        marginBottom: 10
     },
     button: {
-        backgroundColor: '#007AFF',
-        padding: 16,
-        borderRadius: 8,
-        alignItems: 'center',
+        backgroundColor: "#007AFF", 
+        padding: 15, 
+        borderRadius: 8, 
+        alignItems: "center"
     },
-    buttonDisabled: {
-        backgroundColor: '#ccc',
+    buttonDisabled: { 
+        backgroundColor: "#ccc" 
     },
-    buttonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    selectHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    refreshButton: {
-        padding: 8,
-    },
-    refreshText: {
-        color: '#007AFF',
-        fontSize: 14,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingVertical: 40,
-    },
-    loadingText: {
-        marginTop: 10,
-        color: '#666',
-        fontSize: 14,
+    buttonText: { 
+        color: "#fff", 
+        fontWeight: "bold" 
     },
     userItem: {
-        flexDirection: 'row',
-        backgroundColor: '#f9f9f9',
+        flexDirection: "row", 
+        backgroundColor: "#f9f9f9", 
         padding: 15,
-        borderRadius: 8,
-        marginBottom: 10,
-        borderLeftWidth: 4,
-        borderLeftColor: '#007AFF',
+        borderRadius: 8, 
+        marginBottom: 10
     },
     userNumber: {
-        width: 35,
-        height: 35,
-        borderRadius: 17.5,
-        backgroundColor: '#007AFF',
+        width: 35, 
+        height: 35, 
+        borderRadius: 17, 
+        backgroundColor: "#007AFF",
+        justifyContent: "center", 
+        alignItems: "center", 
+        marginRight: 12
+    },
+    userNumberText: { 
+        color: "#fff", 
+        fontWeight: "bold" 
+    },
+    userInfo: { 
+        flex: 1 
+    },
+    userName: { 
+        fontSize: 16, 
+        fontWeight: "600" 
+    },
+    userId: { 
+        fontSize: 12, 
+        color: "#007AFF" 
+    },
+    userDate: { 
+        fontSize: 12, 
+        color: "#666" 
+    },
+
+    actionButton: {
+        paddingVertical: 6, 
+        paddingHorizontal: 12,
+        borderRadius: 6, 
+        marginRight: 10
+    },
+    actionText: { color: "#fff", 
+        fontWeight: "600" 
+    },
+
+    refreshButton: { 
+        padding: 6 
+    },
+    refreshText: { 
+        color: "#007AFF", 
+        fontWeight: "600" 
+    },
+    modal: {
+        position: 'absolute',
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 12,
+        zIndex: 10
     },
-    userNumberText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 14,
-    },
-    userInfo: {
-        flex: 1,
-    },
-    userName: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
-        marginBottom: 4,
-    },
-    userId: {
-        fontSize: 12,
-        color: '#007AFF',
-        marginBottom: 2,
-    },
-    userDate: {
-        fontSize: 12,
-        color: '#666',
-    },
-    emptyContainer: {
-        alignItems: 'center',
-        paddingVertical: 40,
-    },
-    emptyList: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-    emptyText: {
-        fontSize: 18,
-        color: '#999',
-        marginBottom: 8,
-    },
-    emptySubtext: {
-        fontSize: 14,
-        color: '#bbb',
-    },
-    mvcInfo: {
-        backgroundColor: '#e3f2fd',
-        padding: 15,
-        marginHorizontal: 15,
-        marginBottom: 15,
-        borderRadius: 8,
-        borderLeftWidth: 4,
-        borderLeftColor: '#2196F3',
-    },
-    mvcTitle: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#1976D2',
-        marginBottom: 8,
-    },
-    mvcText: {
-        fontSize: 12,
-        color: '#555',
-        lineHeight: 18,
-    },
-    bold: {
-        fontWeight: 'bold',
-        color: '#1976D2',
-    },
+    modalContent: {
+        backgroundColor: '#fff',
+        padding: 20,
+        borderRadius: 12,
+        width: '80%'
+    }
 });
